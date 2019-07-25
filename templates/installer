@@ -1,0 +1,60 @@
+%{ if system == "linux" }
+#!/bin/bash -x
+set -e
+exec > /tmp/chef_installer.log 2>&1
+
+function install_chef {
+  curl -LO https://www.chef.io/chef/install.sh && sudo bash ./install.sh -P chef-workstation -v ${chef_bootstrap_version}
+}
+
+function install_jq {
+  if [[ ! -f /bin/jq ]]; then
+    if hash curl; then
+      sudo curl -L -o /bin/jq https://github.com/stedolan/jq/releases/download/jq-1.6/jq-linux64 && sudo chmod 755 /bin/jq
+    else
+      sudo wget -O /bin/jq https://github.com/stedolan/jq/releases/download/jq-1.6/jq-linux64 && sudo chmod 755 /bin/jq
+    fi
+  fi
+}
+
+function run_chef {
+  export PATH=$PATH:/opt/chef-workstation/gitbin/
+  if [[ -f ${tmp_path}/Policyfile.lock.json ]]; then
+    rm -f ${tmp_path}/Policyfile.lock.json
+  fi
+  chef install ${tmp_path}/Policyfile.rb --chef-license accept-silent
+  chef export ${tmp_path}/Policyfile.rb . -a
+  mv ${policyfile_name}-*.tgz ${tmp_path}/cookbooks.tgz
+  jq -s '.[0] * .[1]' /var/tmp/dna_base.json /var/tmp/dna_extra.json > /var/tmp/dna.json
+  sudo chef-solo --recipe-url ${tmp_path}/cookbooks.tgz -j ${tmp_path}/dna.json --chef-license accept-silent
+}
+
+function hook_stamp {
+  echo "{\"hostname\":\"$(hostname)\"}" | jq '.' > ${tmp_path}/hook_read_back.json
+}
+
+if sed 's/"//g' /etc/os-release |grep -e '^NAME=CentOS' -e '^NAME=Fedora' -e '^NAME=Red' -e '^NAME=SLES'
+then
+  if ! rpm -q chef-workstation-${chef_bootstrap_version}; then
+    install_jq
+    install_chef
+  fi
+elif sed 's/"//g' /etc/os-release |grep -e '^NAME=Mint' -e '^NAME=Ubuntu' -e '^NAME=Debian'
+then
+  if $(dpkg --compare-versions $(dpkg-query -f='$${Version}' --show chef-workstation) ne ${chef_bootstrap_version}-1); then
+    install_jq
+    install_chef
+  fi
+fi
+
+run_chef
+hook_stamp
+%{ endif }
+
+%{ if system == "windows" }
+
+function install_chef {
+  . { iwr -useb https://omnitruck.chef.io/install.ps1 } | iex; install -product chef-workstation -version ${chef_bootstrap_version}
+}
+
+%{ endif }
