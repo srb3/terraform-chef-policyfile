@@ -53,7 +53,7 @@ resource "null_resource" "chef_run" {
 
   provisioner "file" {
     content     = length(var.module_inputs) != 0 ? jsonencode(var.module_inputs[count.index]) : jsonencode({"dummy" = "data"})
-    destination = "${var.tmp_path}/dna_extra.json"
+    destination = "${local.tmp_path}/dna_extra.json"
   }
 
   provisioner "file" {

@@ -1,7 +1,7 @@
 # Overview
 This terraform module will access a server and create a cookbook artifact from a policyfile, and then run chef-solo against that artifact
 
-Supported platform families:
+### Supported platform families:
  * Debian
  * SLES
  * RHEL
