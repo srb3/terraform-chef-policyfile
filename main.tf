@@ -1,13 +1,15 @@
 locals {
   instance_count = var.instance_count # length(var.ips)
   cmd            = var.system_type == "linux" ? "bash" : "powershell.exe"
-  tmp_path       = var.system_type == "linux" ? var.linux_tmp_path : "C:/Users/${var.ssh_user_name}/AppData/Local/Temp"
+  tmp_path       = var.system_type == "linux" ? var.linux_tmp_path : "C:\\Users\\${var.user_name}\\AppData\\Local\\Temp"
   installer_name = var.system_type == "linux" ? var.linux_installer_name : var.windows_installer_name
   installer      = templatefile("${path.module}/templates/installer", {
     system                 = var.system_type,
     chef_bootstrap_version = var.chef_bootstrap_version,
     tmp_path               = local.tmp_path,
-    policyfile_name        = var.policyfile_name 
+    policyfile_name        = var.policyfile_name,
+    jq_windows_url         = var.jq_windows_url,
+    jq_linux_url           = var.jq_linux_url
   })
   policyfile = var.policyfile != "" ? var.policyfile : templatefile("${path.module}/templates/Policyfile.rb", {
     name           = var.policyfile_name,
@@ -27,9 +29,10 @@ resource "null_resource" "chef_run" {
   }
 
   connection {
-    user        = var.ssh_user_name
-    password    = var.ssh_user_pass
-    private_key = file(var.ssh_user_private_key)
+    type        = var.system_type == "windows" ? "winrm" : "ssh"
+    user        = var.user_name
+    password    = var.user_pass
+    private_key = var.user_private_key != "" ? file(var.user_private_key) : null
     host        = var.ips[count.index]
   }
 
@@ -49,7 +52,7 @@ resource "null_resource" "chef_run" {
   }
 
   provisioner "file" {
-    content     = jsonencode(var.module_inputs[count.index])
+    content     = length(var.module_inputs) != 0 ? jsonencode(var.module_inputs[count.index]) : jsonencode({"dummy" = "data"})
     destination = "${var.tmp_path}/dna_extra.json"
   }
 
@@ -66,15 +69,16 @@ resource "null_resource" "chef_run" {
 }
 
 data "external" "module_hook" {
-  count = local.instance_count
+  count = var.system_type == "windows" ? 0 : local.instance_count
   program    = ["bash", "${path.module}/files/data_source.sh"]
   depends_on = ["null_resource.chef_run"]
 
   query = {
-    ssh_user              = var.ssh_user_name
-    ssh_pass              = var.ssh_user_pass
-    ssh_key               = var.ssh_user_private_key
+    ssh_user              = var.user_name
+    ssh_pass              = var.user_pass
+    ssh_key               = var.user_private_key
     server_ip             = var.ips[count.index]
     tmp_file              = "${local.tmp_path}/hook_read_back.json"
+    jq_path               = "${local.tmp_path}/bin/jq"
   }
 }
