@@ -2,12 +2,10 @@
 variable "ips" {
   description = "A list of ip addresses where chef-solo will run"
   type        = list
-  default     = []
 }
 
 variable "instance_count" {
   description = "The number of instances that will have chef-solo run on them"
-  default     = 0
 }
 
 variable "user_name" {
@@ -16,13 +14,13 @@ variable "user_name" {
 }
 
 variable "user_pass" {
-  description = "The ssh or winrm user password used to access the ip addresses"
+  description = "The ssh or winrm user password used to access the ip addresses (either user_pass or user_private_key needs to be set)"
   type        = string
   default     = ""
 }
 
 variable "user_private_key" {
-  description = "The ssh user key used to access the ip addresses"
+  description = "The ssh user key used to access the ip addresses (either user_pass or user_private_key needs to be set)"
   type        = string
   default     = ""
 }

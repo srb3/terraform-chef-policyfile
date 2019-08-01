@@ -27,8 +27,8 @@ module "chef_server" {
 |ips|A list of ip addresses where chef-solo will run|list|[]|no|
 |instance_count|The number of instances that will have chef-solo run on them| integer |0|no|
 |user_name|The ssh or winrm user name used to access the ip addresses provided|string||yes|
-|user_pass|The ssh or winrm user password used to access the ip addresses|string|""|no|
-|user_private_ssh_key|The ssh user key used to access the ip addresses|string|""|no|
+|user_pass|The ssh or winrm user password used to access the ip addresses (either user_pass or user_private_key needs to be set)|string|""|no|
+|user_private_key|The ssh user key used to access the ip addresses (either user_pass or user_private_key needs to be set)|string|""|no|
 |hook_data|If you need this module to depend on the output of another module/resource use this variable to store its output|string|"{}"|no|
 |system_type|The system type linux or windows|string|linux|no|
 |linux_tmp_path|The location of a temp directory to store install scripts on|string|/var/tmp|no|
