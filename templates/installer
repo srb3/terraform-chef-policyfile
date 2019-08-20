@@ -1,7 +1,7 @@
 %{ if system == "linux" }
-#!/bin/bash -x
-set -e
-exec > /tmp/chef_installer.log 2>&1
+#!/bin/bash
+set -ex
+exec > ${tmp_path}/chef_installer.log 2>&1
 
 function install_chef {
   curl -LO https://www.chef.io/chef/install.sh && sudo bash ./install.sh -P chef-workstation -v ${chef_bootstrap_version}
@@ -44,7 +44,7 @@ function run_chef {
     cat ${tmp_path}/dna_base.json > ${tmp_path}/dna.json
   fi
 
-  sudo env "PATH=$PATH" chef-solo --recipe-url ${tmp_path}/cookbooks.tgz -j ${tmp_path}/dna.json --chef-license accept-silent
+  sudo env "PATH=$PATH:/usr/sbin/" chef-solo --recipe-url ${tmp_path}/cookbooks.tgz -j ${tmp_path}/dna.json --chef-license accept-silent
 }
 
 function hook_stamp {

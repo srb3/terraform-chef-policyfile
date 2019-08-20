@@ -6,6 +6,7 @@ variable "ips" {
 
 variable "instance_count" {
   description = "The number of instances that will have chef-solo run on them"
+  type        = number
 }
 
 variable "user_name" {
