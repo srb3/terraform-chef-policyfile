@@ -1,7 +1,8 @@
 locals {
   instance_count = var.instance_count # length(var.ips)
   cmd            = var.system_type == "linux" ? "bash" : "powershell.exe"
-  tmp_path       = var.system_type == "linux" ? var.linux_tmp_path : "C:\\Users\\${var.user_name}\\AppData\\Local\\Temp"
+  mkdir          = var.system_type == "linux" ? "mkdir -p" : "New-Item -ItemType Directory -Force -Path"
+  tmp_path       = var.system_type == "linux" ? "${var.linux_tmp_path}/${var.policyfile_name}" : "C:\\Users\\${var.user_name}\\AppData\\Local\\Temp\\${var.policyfile_name}"
   installer_name = var.system_type == "linux" ? var.linux_installer_name : var.windows_installer_name
   installer      = templatefile("${path.module}/templates/installer", {
     system                 = var.system_type,
@@ -34,6 +35,12 @@ resource "null_resource" "chef_run" {
     password    = var.user_pass
     private_key = var.user_private_key != "" ? file(var.user_private_key) : null
     host        = var.ips[count.index]
+  }
+
+  provisioner "remote-exec" {
+    inline = [
+      "${local.mkdir} ${local.tmp_path}"
+    ]
   }
 
   provisioner "file" {

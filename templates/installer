@@ -67,6 +67,7 @@ fi
 
 run_chef
 hook_stamp
+exit 0
 %{ endif }
 
 %{ if system == "windows" }
