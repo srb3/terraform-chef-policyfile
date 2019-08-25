@@ -4,7 +4,8 @@ set -ex
 exec > ${tmp_path}/chef_installer.log 2>&1
 
 function install_chef {
-  curl -LO https://www.chef.io/chef/install.sh && sudo bash ./install.sh -P chef-workstation -v ${chef_bootstrap_version}
+  curl -L -o ${tmp_path}/install.sh https://www.chef.io/chef/install.sh
+  sudo bash ${tmp_path}/install.sh -P chef-workstation -v ${chef_bootstrap_version}
 }
 
 function install_jq {
@@ -60,8 +61,12 @@ then
   fi
 elif sed 's/"//g' /etc/os-release |grep -e '^NAME=Mint' -e '^NAME=Ubuntu' -e '^NAME=Debian'
 then
-  if $(dpkg --compare-versions $(dpkg-query -f='$${Version}' --show chef-workstation) ne ${chef_bootstrap_version}-1); then
+  if ! dpkg -l chef-workstation; then
     install_chef
+  else
+    if $(dpkg --compare-versions $(dpkg-query -f='$${Version}' --show chef-workstation) ne ${chef_bootstrap_version}-1); then
+      install_chef
+    fi
   fi
 fi
 

@@ -64,7 +64,7 @@ resource "null_resource" "chef_run" {
   }
 
   provisioner "file" {
-    content     = jsonencode(var.dna[count.index])
+    content     = length(var.dna) != 0 ? jsonencode(var.dna[count.index]) : jsonencode({"mock" = "data"})
     destination = "${local.tmp_path}/dna_base.json"
   }
 
