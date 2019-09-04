@@ -35,6 +35,7 @@ resource "null_resource" "chef_run" {
     password    = var.user_pass
     private_key = var.user_private_key != "" ? file(var.user_private_key) : null
     host        = var.ips[count.index]
+    timeout     = var.timeout
   }
 
   provisioner "remote-exec" {
