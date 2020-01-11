@@ -79,7 +79,7 @@ resource "null_resource" "chef_run" {
 data "external" "module_hook" {
   count = var.system_type == "windows" ? 0 : local.instance_count
   program    = ["bash", "${path.module}/files/data_source.sh"]
-  depends_on = ["null_resource.chef_run"]
+  depends_on = [null_resource.chef_run]
 
   query = {
     ssh_user              = var.user_name
