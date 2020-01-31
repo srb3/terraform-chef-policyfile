@@ -90,3 +90,17 @@ data "external" "module_hook" {
     jq_path               = "${local.tmp_path}/bin/jq"
   }
 }
+
+resource "random_string" "module_hook" {
+  depends_on       = [null_resource.chef_run]
+  count            = local.instance_count
+  length           = 16
+  special          = true
+  override_special = "/@\" "
+}
+
+data "null_data_source" "module_hook" {
+  inputs = {
+    data = jsonencode(random_string.module_hook[*].result)
+  }
+}
