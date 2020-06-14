@@ -60,13 +60,8 @@ resource "null_resource" "chef_run" {
   }
 
   provisioner "file" {
-    content     = length(var.module_inputs) != 0 ? jsonencode(var.module_inputs[count.index]) : jsonencode({"dummy" = "data"})
-    destination = "${local.tmp_path}/dna_extra.json"
-  }
-
-  provisioner "file" {
     content     = length(var.dna) != 0 ? jsonencode(var.dna[count.index]) : jsonencode({"mock" = "data"})
-    destination = "${local.tmp_path}/dna_base.json"
+    destination = "${local.tmp_path}/dna.json"
   }
 
   provisioner "remote-exec" {
@@ -74,6 +69,8 @@ resource "null_resource" "chef_run" {
       "${local.cmd} ${local.tmp_path}/${local.installer_name}"
     ]
   }
+
+  depends_on = [null_resource.module_depends_on]
 }
 
 data "external" "module_hook" {
@@ -91,16 +88,9 @@ data "external" "module_hook" {
   }
 }
 
-resource "random_string" "module_hook" {
-  depends_on       = [null_resource.chef_run]
-  count            = local.instance_count
-  length           = 16
-  special          = true
-  override_special = "/@\" "
-}
+resource "null_resource" "module_depends_on" {
 
-data "null_data_source" "module_hook" {
-  inputs = {
-    data = jsonencode(random_string.module_hook[*].result)
+  triggers = {
+    value = length(var.module_depends_on)
   }
 }

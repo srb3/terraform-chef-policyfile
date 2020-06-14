@@ -39,12 +39,6 @@ function run_chef {
 
   mv ${policyfile_name}-*.tgz ${tmp_path}/cookbooks.tgz
 
-  if [[ -f ${tmp_path}/dna_extra.json ]]; then
-    jq -s '.[0] * .[1]' ${tmp_path}/dna_base.json ${tmp_path}/dna_extra.json > ${tmp_path}/dna.json
-  else
-    cat ${tmp_path}/dna_base.json > ${tmp_path}/dna.json
-  fi
-
   sudo env "PATH=$PATH:/usr/sbin/" chef-solo --recipe-url ${tmp_path}/cookbooks.tgz -j ${tmp_path}/dna.json --chef-license accept-silent
 }
 
@@ -116,11 +110,6 @@ function run_chef {
   }
   mv ${policyfile_name}-*.tgz ${tmp_path}\cookbooks.tgz
 
-  if(Test-Path ${tmp_path}\dna_extra.json) {
-    jq -s '.[0] * .[1]' ${tmp_path}\dna_base.json ${tmp_path}\dna_extra.json > ${tmp_path}\dna.json
-  }else {
-    cp ${tmp_path}\dna_base.json ${tmp_path}\dna.json
-  }
   chef-solo --recipe-url ${tmp_path}\cookbooks.tgz -j ${tmp_path}\dna.json --chef-license accept-silent
 }
 
