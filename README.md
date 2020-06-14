@@ -12,7 +12,7 @@ This terraform module will access a server and create a cookbook artifact from a
 
 module "chef_server" {
   source           = "devoptimist/policyfile/chef"
-  version          = "0.0.11"
+  version          = "0.0.12"
   ips              = ["172.16.0.23"]
   instance_count   = 1
   user_name        = "ec2-user"

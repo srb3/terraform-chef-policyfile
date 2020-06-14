@@ -32,13 +32,6 @@ variable "timeout" {
   default     = "5m"
 }
 
-################# module hook #####################
-
-variable "hook_data" {
-  description = "If you need this module to depend on the output of another module/resource use this variable to store its output"
-  type        = string
-  default     = "{}"
-}
 
 ################# misc ############################
 

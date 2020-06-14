@@ -50,11 +50,6 @@ resource "null_resource" "chef_run" {
   }
 
   provisioner "file" {
-    content     = var.hook_data
-    destination = "${local.tmp_path}/hook_data.json"
-  }
-
-  provisioner "file" {
     content     = local.policyfile
     destination = "${local.tmp_path}/Policyfile.rb"
   }
@@ -71,21 +66,6 @@ resource "null_resource" "chef_run" {
   }
 
   depends_on = [null_resource.module_depends_on]
-}
-
-data "external" "module_hook" {
-  count = var.system_type == "windows" ? 0 : local.instance_count
-  program    = ["bash", "${path.module}/files/data_source.sh"]
-  depends_on = [null_resource.chef_run]
-
-  query = {
-    ssh_user              = var.user_name
-    ssh_pass              = var.user_pass
-    ssh_key               = var.user_private_key
-    server_ip             = var.ips[count.index]
-    tmp_file              = "${local.tmp_path}/hook_read_back.json"
-    jq_path               = "${local.tmp_path}/bin/jq"
-  }
 }
 
 resource "null_resource" "module_depends_on" {
