@@ -1,5 +1,4 @@
 locals {
-  instance_count = var.instance_count # length(var.ips)
   cmd            = var.system_type == "linux" ? "bash" : "powershell.exe"
   mkdir          = var.system_type == "linux" ? "mkdir -p" : "New-Item -ItemType Directory -Force -Path"
   tmp_path       = var.system_type == "linux" ? "${var.linux_tmp_path}/${var.policyfile_name}" : "C:\\Users\\${var.user_name}\\AppData\\Local\\Temp\\${var.policyfile_name}"
@@ -21,20 +20,19 @@ locals {
 }
 
 resource "null_resource" "chef_run" {
-  count    = local.instance_count
 
   triggers = {
-    data = md5(jsonencode(var.dna))
-    ips = md5(join(",", var.ips))
+    data       = md5(jsonencode(var.dna))
+    ip         = md5(join(",", var.ip))
     policyfile = md5(local.policyfile)
   }
 
   connection {
     type        = var.system_type == "windows" ? "winrm" : "ssh"
     user        = var.user_name
-    password    = var.user_pass
+    password    = var.user_pass != "" ? var.user_pass : null
     private_key = var.user_private_key != "" ? file(var.user_private_key) : null
-    host        = var.ips[count.index]
+    host        = var.ip
     timeout     = var.timeout
   }
 
@@ -55,7 +53,7 @@ resource "null_resource" "chef_run" {
   }
 
   provisioner "file" {
-    content     = length(var.dna) != 0 ? jsonencode(var.dna[count.index]) : jsonencode({"mock" = "data"})
+    content     = length(var.dna) != 0 ? jsonencode(var.dna) : jsonencode({"mock" = "data"})
     destination = "${local.tmp_path}/dna.json"
   }
 
@@ -63,14 +61,5 @@ resource "null_resource" "chef_run" {
     inline = [
       "${local.cmd} ${local.tmp_path}/${local.installer_name}"
     ]
-  }
-
-  depends_on = [null_resource.module_depends_on]
-}
-
-resource "null_resource" "module_depends_on" {
-
-  triggers = {
-    value = length(var.module_depends_on)
   }
 }
