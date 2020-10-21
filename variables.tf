@@ -1,12 +1,8 @@
 ################## connection #####################
-variable "ips" {
-  description = "A list of ip addresses where chef-solo will run"
-  type        = list
-}
 
-variable "instance_count" {
-  description = "The number of instances that will have chef-solo run on them"
-  type        = number
+variable "ip" {
+  description = "The ip address where chef-solo will run"
+  type        = string
 }
 
 variable "user_name" {
@@ -31,7 +27,6 @@ variable "timeout" {
   type        = string
   default     = "5m"
 }
-
 
 ################# misc ############################
 
@@ -86,9 +81,9 @@ variable "policyfile" {
 }
 
 variable "dna" {
-  description = "A list JSON strings of chef attributes to apply to the chef-solo runs of each ip address"
-  type        = list
-  default     = []
+  description = "A map of JSON strings of chef attributes to apply to the chef-solo runs of each ip address"
+  type        = map
+  default     = {}
 }
 
 variable "policyfile_name" {

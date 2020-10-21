@@ -23,7 +23,7 @@ resource "null_resource" "chef_run" {
 
   triggers = {
     data       = md5(jsonencode(var.dna))
-    ip         = md5(join(",", var.ip))
+    ip         = md5(var.ip)
     policyfile = md5(local.policyfile)
   }
 
