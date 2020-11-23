@@ -3,7 +3,7 @@ locals {
   mkdir          = var.system_type == "linux" ? "mkdir -p" : "New-Item -ItemType Directory -Force -Path"
   tmp_path       = var.system_type == "linux" ? "${var.linux_tmp_path}/${var.policyfile_name}" : "C:\\Users\\${var.user_name}\\AppData\\Local\\Temp\\${var.policyfile_name}"
   installer_name = var.system_type == "linux" ? var.linux_installer_name : var.windows_installer_name
-  installer      = templatefile("${path.module}/templates/installer", {
+  installer = templatefile("${path.module}/templates/installer", {
     system                 = var.system_type,
     chef_bootstrap_version = var.chef_bootstrap_version,
     tmp_path               = local.tmp_path,
@@ -53,7 +53,7 @@ resource "null_resource" "chef_run" {
   }
 
   provisioner "file" {
-    content     = length(var.dna) != 0 ? jsonencode(var.dna) : jsonencode({"mock" = "data"})
+    content     = length(var.dna) != 0 ? jsonencode(var.dna) : jsonencode({ "mock" = "data" })
     destination = "${local.tmp_path}/dna.json"
   }
 
